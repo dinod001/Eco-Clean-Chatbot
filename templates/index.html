@@ -4,283 +4,249 @@
   <meta charset="UTF-8" />
   <title>EcoClean Assistant</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --primary-green: #2e7d32;
       --light-green: #4caf50;
-      --pale-green: #e8f5e9;
+      --pale-green: #f1f8e9;
       --accent-green: #81c784;
-      --text-dark: #1c1c1c;
+      --text-dark: #212121;
       --text-light: #ffffff;
+      --border-light: #e0e0e0;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
-      font-family: 'Poppins', sans-serif;
-      background-color: var(--pale-green);
+      font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 0;
       color: var(--text-dark);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      background-color: #f5f5f5;
     }
 
-    .header {
-      background-color: var(--primary-green);
-      color: var(--text-light);
-      padding: 1.5rem;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 2rem;
-      font-weight: 600;
-    }
-
-    .chat-container {
-      width: 100%;
-      max-width: 900px;
-      margin: 2rem auto;
-      background-color: var(--text-light);
+    /* Chat Widget Container */
+    .chat-widget {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 380px;
+      height: 520px;
+      background: var(--text-light);
       border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--shadow);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 180px);
-      flex: 1 1 auto;
+      z-index: 10000;
+      transition: var(--transition);
     }
 
-    .chat-history {
-      flex-grow: 1;
-      padding: 2rem;
-      overflow-y: auto;
-      background-color: var(--text-light);
-    }
-
-    .message {
-      margin-bottom: 1.5rem;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeIn 0.3s ease forwards;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
+    /* Mobile fullscreen */
+    @media screen and (max-width: 600px) {
+      .chat-widget {
+        width: 100%;
+        height: 100dvh;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
       }
     }
 
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+      color: var(--text-light);
+      padding: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header-icon {
+      font-size: 1.5rem;
+    }
+
+    /* Chat area */
+    .chat-history {
+      flex-grow: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      background: var(--pale-green);
+      scroll-behavior: smooth;
+    }
+    .chat-history::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-history::-webkit-scrollbar-thumb {
+      background: var(--accent-green);
+      border-radius: 3px;
+    }
+    .message {
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: flex-start;
+      animation: fadeIn 0.3s ease-in;
+    }
     .message.user {
       justify-content: flex-end;
     }
-
-    .message.ai {
-      justify-content: flex-start;
-    }
-
     .message-content {
-      max-width: 70%;
-      padding: 1rem 1.5rem;
+      max-width: 75%;
+      padding: 0.9rem 1.2rem;
       border-radius: 12px;
-      font-size: 1rem;
-      line-height: 1.5;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      word-break: break-word;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      position: relative;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
     }
-
     .message.user .message-content {
-      background-color: var(--primary-green);
+      background: var(--primary-green);
       color: var(--text-light);
       border-bottom-right-radius: 4px;
     }
-
     .message.ai .message-content {
-      background-color: var(--pale-green);
+      background: var(--text-light);
       color: var(--text-dark);
-      border-bottom-left-radius: 4px;
       border: 1px solid var(--accent-green);
+      border-bottom-left-radius: 4px;
     }
-
-    .icon {
+    .message-icon {
       font-size: 1.2rem;
-      line-height: 1.5;
-      margin-right: 4px;
+      line-height: 1;
+    }
+    .message.user .message-icon {
+      order: 1;
+    }
+    .message.ai .message-icon {
+      order: -1;
     }
 
+    /* Input */
     .input-container {
-      padding: 1.5rem;
-      background-color: var(--text-light);
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
       display: flex;
-      gap: 1rem;
       align-items: center;
+      padding: 1rem;
+      background: var(--text-light);
+      border-top: 1px solid var(--border-light);
     }
-
     .message-input {
       flex-grow: 1;
-      padding: 1rem;
-      border: 2px solid var(--accent-green);
+      padding: 0.8rem 1rem;
       border-radius: 8px;
-      font-family: inherit;
-      font-size: 1rem;
-      resize: none;
+      border: 1px solid var(--accent-green);
       outline: none;
-      transition: all 0.3s ease;
-      background-color: var(--text-light);
+      resize: none;
       min-height: 48px;
-      max-height: 150px;
+      max-height: 96px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: #fafafa;
+      transition: var(--transition);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
     }
-
     .message-input:focus {
-      border-color: var(--primary-green);
-      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+      border-color: var(--light-green);
+      box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      background: var(--text-light);
     }
-
+    .message-input::placeholder {
+      color: #757575;
+      opacity: 0.8;
+    }
     .send-button {
+      margin-left: 0.75rem;
+      background: var(--primary-green);
+      color: var(--text-light);
+      border: none;
       padding: 0.8rem 1.5rem;
-      background-color: var(--primary-green);
-      color: var(--text-light);
-      border: none;
       border-radius: 8px;
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: 500;
       cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: var(--transition);
+      min-width: 80px;
     }
-
     .send-button:hover {
-      background-color: var(--light-green);
-      transform: translateY(-2px);
-    }
-
-    .send-button:active {
-      transform: scale(0.98);
-    }
-
-    .clear-button {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      padding: 0.75rem 1.5rem;
-      background-color: var(--accent-green);
-      color: var(--text-light);
-      border: none;
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .clear-button:hover {
-      background-color: var(--light-green);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--pale-green);
-      border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--accent-green);
-      border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
       background: var(--light-green);
+      transform: translateY(-2px);
+    }
+    .send-button:active {
+      transform: translateY(0);
     }
 
-    /* Responsive */
-    @media screen and (max-width: 768px) {
-      .chat-container {
-        margin: 1rem;
-        height: 85vh;
-        border-radius: 12px;
-      }
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-      .chat-history {
-        padding: 1rem;
-      }
-
-      .input-container {
-        padding: 1rem;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      .message-input {
-        font-size: 0.95rem;
-        padding: 0.8rem;
-      }
-
-      .send-button {
+    /* Responsive adjustments */
+    @media screen and (max-width: 400px) {
+      .chat-widget {
         width: 100%;
-        justify-content: center;
-        font-size: 0.95rem;
+        height: 100dvh;
       }
-
+      .header h1 {
+        font-size: 1.1rem;
+      }
       .message-content {
-        font-size: 0.95rem;
-        max-width: 100%;
+        font-size: 0.9rem;
+      }
+      .message-icon {
+        font-size: 1rem;
+      }
+      .send-button {
+        padding: 0.7rem 1.2rem;
+        min-width: 70px;
+      }
+      .message-input {
+        min-height: 44px;
       }
     }
   </style>
 </head>
 <body>
-  <header class="header">
-    <h1>🌿 EcoClean Assistant</h1>
-  </header>
+  <!-- Chat Widget -->
+  <div class="chat-widget" id="chat-widget">
+    <header class="header">
+      <span class="header-icon">🌿</span>
+      <h1>EcoClean Assistant</h1>
+    </header>
 
-  <div class="chat-container">
     <div class="chat-history" id="chat-history">
-      <!-- Messages will be dynamically inserted here -->
+      <!-- Messages go here -->
     </div>
+
     <div class="input-container">
-      <textarea
-        class="message-input"
-        id="user-input"
-        placeholder="Ask me anything about eco-friendly cleaning..."
-        rows="1"
-      ></textarea>
-      <button class="send-button" onclick="sendMessage()">Send ✨</button>
+      <textarea id="user-input" class="message-input" placeholder="Ask about eco-friendly cleaning..." rows="2"></textarea>
+      <button class="send-button" onclick="sendMessage()">Send</button>
     </div>
   </div>
 
-  <button class="clear-button" onclick="clearChat()">Clear Chat 🧹</button>
-
   <script>
-    // Load chat history + initial message
     window.onload = function () {
-      const chatHistory = document.getElementById('chat-history');
       appendMessage('ai', 'Hi, how can I help you today?');
 
       fetch('/history')
-        .then((response) => response.json())
-        .then((data) => {
-          data.messages.forEach((msg) => {
+        .then(res => res.json())
+        .then(data => {
+          data.messages.forEach(msg => {
             appendMessage(msg.type === 'human' ? 'user' : 'ai', msg.content);
           });
-          chatHistory.scrollTop = chatHistory.scrollHeight;
         });
     };
 
@@ -288,7 +254,6 @@
       const input = document.getElementById('user-input');
       const message = input.value.trim();
       if (!message) return;
-
       appendMessage('user', message);
       input.value = '';
 
@@ -297,43 +262,31 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message }),
       })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.response) {
-            appendMessage('ai', data.response);
-          } else {
-            appendMessage('ai', '[Error processing response]');
-          }
-        })
-        .catch(() => {
-          appendMessage('ai', '[Server error]');
-        });
+      .then(res => res.json())
+      .then(data => {
+        appendMessage('ai', data.response || '[Error]');
+      })
+      .catch(() => {
+        appendMessage('ai', '[Server error]');
+      });
     }
 
     function appendMessage(sender, content) {
       const chatHistory = document.getElementById('chat-history');
       const div = document.createElement('div');
       div.className = 'message ' + sender;
-
       const contentDiv = document.createElement('div');
       contentDiv.className = 'message-content';
-
-      if (sender === 'ai') {
-        contentDiv.innerHTML = `<span class="icon">👩‍💼</span> ${content}`;
-      } else {
-        contentDiv.textContent = content;
-      }
-
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'message-icon';
+      iconSpan.textContent = sender === 'user' ? '🙋' : '🤖';
+      contentDiv.appendChild(iconSpan);
+      const textSpan = document.createElement('span');
+      textSpan.textContent = content;
+      contentDiv.appendChild(textSpan);
       div.appendChild(contentDiv);
       chatHistory.appendChild(div);
       chatHistory.scrollTop = chatHistory.scrollHeight;
-    }
-
-    function clearChat() {
-      fetch('/clear', { method: 'POST' }).then(() => {
-        document.getElementById('chat-history').innerHTML = '';
-        appendMessage('ai', 'Hi, how can I help you today?');
-      });
     }
   </script>
 </body>
